@@ -1,0 +1,8 @@
+[project]
+name = "bot_voice"
+version = "0.1.0"
+description = "Voice DJ feature app for the Sidewalk Discord bot"
+requires-python = ">=3.10"
+
+[project.scripts]
+bot-voice = "voice_player.app:main"
