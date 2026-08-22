@@ -69,12 +69,14 @@ start_vnc() {
 }
 
 start_chrome() {
-  "$CHROME_BIN" --no-sandbox --disable-gpu --disable-gpu-compositing \
+  nice -n 10 "$CHROME_BIN" --no-sandbox --disable-gpu --disable-gpu-compositing \
     --disable-dev-shm-usage --no-first-run \
     --no-default-browser-check --disable-session-crashed-bubble --disable-infobars \
     --disable-component-update --disable-background-networking --disable-features=Vulkan \
     --use-gl=swiftshader --window-size=1400,900 --user-data-dir="$L/chrome-profile" \
     --single-process --disable-extensions --disable-plugins \
+    --disable-animations --disable-smooth-scrolling --disable-paint-holding \
+    --disable-image-animation --blink-settings=reduceMotion=true \
     https://open.spotify.com/ > "$L/chromium.log" 2>&1 &
   CHROME=$!
 }
