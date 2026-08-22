@@ -5,3 +5,10 @@ __pycache__/
 *.db
 *.log
 nohup.out
+
+# spotcast runtime state (never commit)
+spotcast/chrome-profile*/
+spotcast/*.log
+spotcast/*.png
+spotcast/*.jpg
+spotcast/*.xwd
