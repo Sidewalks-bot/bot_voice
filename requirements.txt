@@ -8,3 +8,4 @@ python-dotenv>=1.0
 PyNaCl>=1.5
 # web backend (browser capture) — install chromium separately:
 playwright>=1.44
+# Spotify OS-audio capture (spot backend) needs host pulseaudio + pulseaudio-utils

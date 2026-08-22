@@ -31,8 +31,20 @@ and we feed that PCM from ffmpeg-decoded audio (browser-captured or yt-dlp).
 > embedded players). For Spotify specifically, the practical path is either the
 > `yt` backend (YouTube equivalent) or Spotify Connect device control.
 
+
+3. **`spot` (Spotify via OS audio capture — DRM workaround)** — opens the
+   Spotify web player in a headed Chromium routed to a PulseAudio *null sink*
+   (a virtual sound device), then captures that sink at the OS level. Because
+   the DRM is applied inside the browser, not on the sink output, we get the
+   real audio. Then it streams into the Discord voice channel exactly like the
+   `yt` backend. Requires `pulseaudio` + `pulseaudio-utils`. Usage: `/voice
+   spotify` (log in & play in the browser), then `/voice spot` to switch the
+   backend, then `/voice play`.
+
 ## Install
 ```bash
+# OS audio capture (spot backend):
+apt-get install -y pulseaudio pulseaudio-utils
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 # only if you use the web backend:

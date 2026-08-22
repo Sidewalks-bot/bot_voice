@@ -50,6 +50,20 @@ def handle(command: str, args: dict, _author_id: int | None) -> dict:
             if not text:
                 return {"ok": False, "text": "usage: /voice source <yt|web>"}
             return {"ok": True, "text": player.set_backend(text)}
+        if command == "spotify":
+            # open the Spotify web player routed to the capture sink
+            from . import spotify
+            dev = spotify.SoundDevice()
+            if not dev.available():
+                return {"ok": False, "text": "Spotify needs PulseAudio (pulseaudio + pulseaudio-utils). Not detected."}
+            try:
+                dev.start()
+                cursor = dev.start_web_player()
+                return {"ok": True, "text": "Spotify web player opening — log in & play, then `/voice spot` + `/voice play`."}
+            except SourceError as exc:
+                return {"ok": False, "text": str(exc)}
+        if command == "spot":
+            return {"ok": True, "text": _run(player.set_backend("spot")) + " -> now `/voice play` captures the Spotify sink."}
         if command in ("help", ""):
             return {"ok": True, "text": _HELP}
     except (PlayerError, SourceError) as exc:
@@ -89,6 +103,7 @@ _HELP = (
     "- `/voice play <song/url>`\n"
     "- `/voice pause | resume | skip`\n"
     "- `/voice queue | now`\n"
-    "- `/voice source <yt|web>`\n"
+    "- `/voice source <yt|web|spot>`\n"
+    "- `/voice spotify` — open Spotify web player + OS capture\n"
     "- `/voice leave`"
 )

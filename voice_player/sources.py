@@ -90,10 +90,28 @@ def _resolve_web(page_url: str) -> ResolvedSource:
     return ResolvedSource(title=f"Web player: {page_url}", url=page_url)
 
 
+def _resolve_spot() -> ResolvedSource:
+    """OS-level audio capture of the Spotify web player (DRM workaround).
+
+    Plays Spotify through a PulseAudio null sink and captures the sink at the
+    OS level, so EME on the page doesn't matter. See spotify.py.
+    """
+    from . import spotify  # local import to avoid hard dep
+    dev = spotify.SoundDevice()
+    if not dev.available():
+        raise SourceError(
+            "Spotify OS-capture needs PulseAudio. Install `pulseaudio` + "
+            "`pulseaudio-utils` and run `/voice spotify` to open + capture."
+        )
+    return dev.build_source()
+
+
 def resolve(query: str, backend: str = "yt") -> ResolvedSource:
     backend = (backend or "yt").lower()
     if backend in ("yt", "youtube"):
         return _resolve_yt(query)
     if backend in ("web", "browser"):
         return _resolve_web(query)
+    if backend in ("spot", "spotify"):
+        return _resolve_spot()
     raise SourceError(f"unknown backend: {backend}")
