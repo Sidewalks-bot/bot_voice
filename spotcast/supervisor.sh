@@ -1,5 +1,6 @@
 #!/bin/bash
 # noVNC browser-stack supervisor — all paths in /agent_home (persistent)
+# Includes PulseAudio for audio capture from Chrome -> Discord voice
 set -uo pipefail
 L=/agent_home/spotcast
 LIB=/agent_home/.local/usr/lib/x86_64-linux-gnu:/agent_home/.local/lib/x86_64-linux-gnu
@@ -16,6 +17,33 @@ XKB_DIR=/agent_home/.local/usr/share/X11/xkb
 mkdir -p "$L"
 
 echo "[supervisor] start $(date)" > "$L/supervisor.log"
+
+# --- PulseAudio for audio capture ---
+start_pulse() {
+  if ! pactl info >/dev/null 2>&1; then
+    echo "[supervisor] starting pulseaudio" >> "$L/supervisor.log"
+    pulseaudio -D --log-target=file:"$L/pulse.log" 2>/dev/null
+    sleep 2
+  fi
+  # Set up virtual speaker sink + monitor
+  PULSE_SOCK=$(ls -d /tmp/pulse-*/native 2>/dev/null | head -1)
+  if [ -n "$PULSE_SOCK" ]; then
+    export PULSE_SERVER="$PULSE_SOCK"
+    echo "[supervisor] pulse_server=$PULSE_SOCK" >> "$L/supervisor.log"
+    # Load null sink if not already loaded
+    if ! pactl list short sinks 2>/dev/null | grep -q virtual_speaker; then
+      pactl load-module module-null-sink sink_name=virtual_speaker \
+        sink_properties=device.description=VirtualSpeaker 2>/dev/null
+      echo "[supervisor] virtual_speaker sink loaded" >> "$L/supervisor.log"
+    fi
+    pactl set-default-sink virtual_speaker 2>/dev/null
+    pactl set-default-source virtual_speaker.monitor 2>/dev/null
+  else
+    echo "[supervisor] WARNING: no pulse socket found" >> "$L/supervisor.log"
+  fi
+}
+
+start_pulse
 
 # Create xkbcomp wrapper at /usr/bin so Xvfb can find it
 cat > /usr/bin/xkbcomp << 'WRAPPER'
