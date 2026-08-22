@@ -22,6 +22,9 @@ echo "[supervisor] start $(date)" > "$L/supervisor.log"
 start_pulse() {
   if ! pactl info >/dev/null 2>&1; then
     echo "[supervisor] starting pulseaudio" >> "$L/supervisor.log"
+    # Set low-latency daemon defaults
+    sed -i 's/; default-fragments = 4/default-fragments = 2/' /etc/pulse/daemon.conf 2>/dev/null
+    sed -i 's/; default-fragment-size-msec = 25/default-fragment-size-msec = 10/' /etc/pulse/daemon.conf 2>/dev/null
     pulseaudio -D --log-target=file:"$L/pulse.log" 2>/dev/null
     sleep 2
   fi
